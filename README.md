@@ -1,32 +1,33 @@
 # KitAgentTool
 
-可复用的 Agent 工具协议与运行时模型。定义 LLM 工具调用、参数解析、权限风险、取消上下文与多语言 schema，供宿主应用与插件共享。
+📖 English | [中文版](README_zh.md)
+
+Reusable Agent tool protocol and runtime models. Defines LLM tool calls, argument parsing, permission risk, cancellation context, and localized schemas, shared by host apps and plugins.
 
 ## Package
 
-- Product: `KitAgentTool`
-- Platform: macOS 14+
+- Manifest package name: `KitAgentTool` (matches the repository name)
+- Product / Target: `KitAgentTool`
+- Platform: macOS 14+, iOS 17+
 - Swift tools: 6.0
 
 ## Main Types
 
-| 类型 | 说明 |
-|------|------|
-| `SuperAgentTool` | Agent 工具协议（名称、描述、schema、风险、执行） |
-| `LocalizedAgentTool` | 按语言包装工具描述与 input schema |
-| `ProjectConfigDirectory` | 项目级配置目录约定（`.lumi/` 写入，兼容读取 `.agent/`） |
-| `ToolCall` | 模型发起的工具调用（含本地授权状态） |
-| `ToolArgument` | 工具参数值（字符串、数字、布尔等） |
-| `ToolExecutionContext` | 单次调用的取消上下文，可转发到底层资源 |
-| `CommandRiskLevel` | 命令风险等级（逻辑层；UI 扩展在 LumiUI） |
-| `ToolCallAuthorizationState` | 工具调用的本地授权状态 |
-| `ToolContextProviding` | 宿主提供的工具构建上下文（如语言偏好） |
-| `ToolError` / `ToolExecutionError` | 工具执行错误类型 |
-| `ImageAttachment` / `ToolImageResultCodec` | 工具结果中的图片附件编解码 |
+| Type | Description |
+|------|-------------|
+| `SuperAgentTool` | Agent tool protocol (name, description, schema, risk, execution) |
+| `LocalizedAgentTool` | Wraps a tool's description and input schema per language |
+| `ProjectConfigDirectory` | Project-level config conventions (writes `.lumi/`, reads `.agent/` for compatibility) |
+| `ToolCall` | A tool call issued by the model (including local authorization state) |
+| `ToolArgument` | Tool argument values (string, number, boolean, etc.) |
+| `ToolExecutionContext` | Per-call cancellation context, forwardable to underlying resources |
+| `CommandRiskLevel` | Command risk level (logic layer; UI extensions live in LumiUI) |
+| `ToolCallAuthorizationState` | Local authorization state of a tool call |
+| `ToolContextProviding` | Host-provided tool construction context (e.g. language preference) |
+| `ToolError` / `ToolExecutionError` | Tool execution error types |
+| `ImageAttachment` / `ToolImageResultCodec` | Image attachment encoding and decoding in tool results |
 
-## 依赖与集成
-
-在 `Package.swift` 中添加远程依赖：
+## Dependencies and Integration
 
 ```swift
 dependencies: [
@@ -42,9 +43,9 @@ targets: [
 ]
 ```
 
-## 基本用法
+## Usage
 
-### 实现工具
+### Implementing a tool
 
 ```swift
 import KitAgentTool
@@ -77,31 +78,30 @@ struct ReadFileTool: SuperAgentTool {
 }
 ```
 
-### 项目级配置目录
+### Project-level config directory
 
-项目级配置（规则 / 技能 / 命令）统一写在项目的 `.lumi/` 目录下；读取时兼容历史目录
-`.agent/`。插件读写这类配置时应复用 `ProjectConfigDirectory`，不要自行硬编码目录名。
+Project-level configuration (rules / skills / commands) is written under the project's `.lumi/` directory; reads stay compatible with the historical `.agent/` directory. Plugins should reuse `ProjectConfigDirectory` instead of hardcoding directory names.
 
 ```swift
-// 写入目标：<project>/.lumi/rules
+// Write target: <project>/.lumi/rules
 let target = ProjectConfigDirectory.writeURL(projectPath: path, component: "rules")
 
-// 读取候选：<project>/.lumi/rules（优先）、<project>/.agent/rules（兜底）
+// Read candidates: <project>/.lumi/rules (preferred), <project>/.agent/rules (fallback)
 let candidates = ProjectConfigDirectory.readURLs(projectPath: path, component: "rules")
 
-// 定位单个条目实际所在的位置
+// Locate a single entry's actual location
 if let url = ProjectConfigDirectory.locate(
     projectPath: path,
     component: "skills",
     name: "my-skill"
 ) {
-    // url 可能是 .lumi/skills/my-skill，也可能是 .agent/skills/my-skill
+    // url may be .lumi/skills/my-skill, or .agent/skills/my-skill
 }
 ```
 
-同名条目以 `.lumi` 为准；更新 / 删除历史目录中的条目时在**原位**操作，不做隐式迁移。
+Entries with the same name resolve to `.lumi`; updating or deleting entries in the historical directory happens **in place**, with no implicit migration.
 
-### 带取消的执行
+### Execution with cancellation
 
 ```swift
 func execute(arguments: [String: ToolArgument], context: ToolExecutionContext) async throws -> String {
@@ -116,13 +116,11 @@ func execute(arguments: [String: ToolArgument], context: ToolExecutionContext) a
 
 ## Host integration
 
-- 工具注册、权限弹窗、对话持久化留在宿主应用（如 Lumi Core / 插件）。
-- 可复用的协议、模型、风险与取消语义放在本 package。
-- 与 LLM API 的 `ToolCall` 类型区分时，可使用 `KitAgentTool.ToolCall` 限定名。
+- Tool registration, permission prompts, and conversation persistence stay in the host app (e.g. Lumi Core / plugins).
+- Reusable protocols, models, risk, and cancellation semantics live in this package.
+- Use `KitAgentTool.ToolCall` to disambiguate from the LLM API's `ToolCall` type.
 
 ## Testing
-
-From this package directory:
 
 ```sh
 swift test
