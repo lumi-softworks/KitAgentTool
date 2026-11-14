@@ -5,7 +5,7 @@
 KitAgentTool 可复用的 Agent 工具协议与运行时模型。定义 LLM 工具调用、参数解析、权限风险、取消上下文与多语言 schema，供宿主应用与插件共享。
 
 平台: macOS 14+, iOS 17+
-测试文件: 9 个，用例总数: 93
+测试文件: 9 个，用例总数: 97
 
 ## 公开 API
 
@@ -36,7 +36,7 @@ KitAgentTool 可复用的 Agent 工具协议与运行时模型。定义 LLM 工�
 - **LanguagePreference**（7 条）：由 `chineseLocaleMapsToChinese`、`englishLocaleMapsToEnglish`、`currentIsNotNilCase` 等用例锁定；改动该模块时优先跑对应测试文件。
 - **ToolError**（5 条）：由 `toolNotFoundIncludesToolName`、`toolExecutionFailedIncludesUnderlyingDescription`、`toolNotFoundDescription` 等用例锁定；改动该模块时优先跑对应测试文件。
 - **ToolCallContextArguments**（7 条）：由 `replacesOnlyRequestedKey`、`invalidJSONReturnsOriginal`、`existentialDispatchUsesToolDeclaration` 等用例锁定；改动该模块时优先跑对应测试文件。
-- **ToolExecutionContext**（2 条）：由 `legacyToolUsesDefaultContextImplementation`、`contextAwareToolReportsOutputAndProgress` 等用例锁定；改动该模块时优先跑对应测试文件。
+- **ToolExecutionContext**（6 条）：由 `legacyToolUsesDefaultContextImplementation`、`contextAwareToolReportsOutputAndProgress`、`preservesLegalTrailingWhitespace`、`returnsNilForWhitespaceOnlyPath` 等用例锁定；改动该模块时优先跑对应测试文件。
 - **ToolImageResultCodec**（7 条）：由 `encodePrefixesMarkerAndRoundTripsContent`、`decodeReturnsNilForPlainTextResult`、`decodeReturnsNilForInvalidJSONPayload` 等用例锁定；改动该模块时优先跑对应测试文件。
 - **UncoveredLogic**（14 条）：由 `defaultDescriptionUsesEnglishVariant`、`defaultInputSchemaUsesEnglishVariant`、`defaultExecuteThrowsExecutionFailed` 等用例锁定；改动该模块时优先跑对应测试文件。
 
@@ -137,27 +137,31 @@ KitAgentTool 可复用的 Agent 工具协议与运行时模型。定义 LLM 工�
 | 91 | ToolCallContextArguments | 非对象 JSON 原样返回 | — | 执行该用例 | 断言成立 | P2 | ✅ 已覆盖 | `nonObjectJSONReturnsOriginal` |
 | 92 | ToolCallContextArguments | 裁剪结果仍是合法 JSON 对象 | — | 执行该用例 | 断言成立 | P1 | ✅ 已覆盖 | `scrubbedOutputRemainsValidJSONObject` |
 | 93 | ToolCallContextArguments | 存在类型上调用也命中工具自己的声明 | — | 执行该用例 | 断言成立 | P1 | ✅ 已覆盖 | `existentialDispatchUsesToolDeclaration` |
+| 94 | ToolExecutionContext | 会话项目路径保留原始尾部空格字节，不被 trim | — | 执行该用例 | 断言成立 | P1 | ✅ 已覆盖 | `preservesLegalTrailingWhitespace` |
+| 95 | ToolExecutionContext | 会话项目路径保留原始首部空格字节，不被 trim | — | 执行该用例 | 断言成立 | P1 | ✅ 已覆盖 | `preservesLegalLeadingWhitespace` |
+| 96 | ToolExecutionContext | 纯空白项目路径返回 nil，trim 仅用于空判断 | — | 执行该用例 | 断言成立 | P1 | ✅ 已覆盖 | `returnsNilForWhitespaceOnlyPath` |
+| 97 | ToolExecutionContext | provider 返回 nil 时会话项目路径为 nil | — | 执行该用例 | 断言成立 | P2 | ✅ 已覆盖 | `returnsNilWhenProviderReturnsNil` |
 
-> 说明：全部 **93 条场景**已在本包 `swift test` 中实跑通过。
+> 说明：全部 **97 条场景**已在本包 `swift test` 中实跑通过。
 > 用例名与描述取自 `Tests/` 下的真实 `@Test` 声明，改动测试时须同步本表。
 
 ## 覆盖率统计
 
 - P0: 已覆盖 8 / 8
-- P1: 已覆盖 66 / 66
-- P2: 已覆盖 19 / 19
-- **合计: 93 / 93**（仅表示清单场景，非源码覆盖率）
+- P1: 已覆盖 69 / 69
+- P2: 已覆盖 20 / 20
+- **合计: 97 / 97**（仅表示清单场景，非源码覆盖率）
 
 ## 优先级说明
 
 - **P0**: 描述/名称含崩溃、泄漏、截断、丢失、竞态、超时、必须、不得、重试等失效类信号的用例（8 条）
-- **P1**: 其余功能性用例（66 条）
-- **P2**: 稳定常量、占位、文案、空集合等边界用例（19 条）
+- **P1**: 其余功能性用例（69 条）
+- **P2**: 稳定常量、占位、文案、空集合等边界用例（20 条）
 
 ## 跨平台说明
 
 - Package 声明: macOS 14+, iOS 17+
-- 86 条用例位于 `Tests/`，需在目标平台执行 `swift test`
+- 97 条用例位于 `Tests/`，需在目标平台执行 `swift test`
 
 ## 测试执行
 

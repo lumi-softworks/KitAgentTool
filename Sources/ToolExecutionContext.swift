@@ -56,10 +56,14 @@ public struct ToolExecutionContext: Sendable {
 
     /// Resolves the project bound to this tool call's conversation, independent
     /// of whichever conversation is currently selected in the UI.
+    ///
+    /// The original path bytes are preserved: a directory may legally carry
+    /// leading or trailing whitespace, and trimming it would resolve relative
+    /// tool paths against a different project. Trimming is used only to decide
+    /// whether the path is empty.
     public func conversationProjectPath() async -> String? {
-        guard let path = await conversationProjectPathProvider()?
-            .trimmingCharacters(in: .whitespacesAndNewlines),
-              !path.isEmpty else {
+        guard let path = await conversationProjectPathProvider(),
+              !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return nil
         }
         return path
