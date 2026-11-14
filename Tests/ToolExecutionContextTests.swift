@@ -99,4 +99,62 @@ struct ToolExecutionContextTests {
             ToolExecutionProgress(message: "Halfway", completed: 1, total: 2, fraction: 0.5)
         ])
     }
+
+    @Test("会话项目路径保留原始尾部空格字节，不被 trim")
+    @MainActor
+    func preservesLegalTrailingWhitespace() async throws {
+        let raw = "/tmp/lumi "
+        let context = ToolExecutionContext(
+            jobID: "job-trailing",
+            conversationID: UUID(),
+            conversationProjectPathProvider: { raw }
+        )
+
+        let resolved = await context.conversationProjectPath()
+
+        #expect(resolved == raw)
+    }
+
+    @Test("会话项目路径保留原始首部空格字节，不被 trim")
+    @MainActor
+    func preservesLegalLeadingWhitespace() async throws {
+        let raw = " /tmp/lumi"
+        let context = ToolExecutionContext(
+            jobID: "job-leading",
+            conversationID: UUID(),
+            conversationProjectPathProvider: { raw }
+        )
+
+        let resolved = await context.conversationProjectPath()
+
+        #expect(resolved == raw)
+    }
+
+    @Test("纯空白项目路径返回 nil，trim 仅用于空判断")
+    @MainActor
+    func returnsNilForWhitespaceOnlyPath() async throws {
+        let context = ToolExecutionContext(
+            jobID: "job-blank",
+            conversationID: UUID(),
+            conversationProjectPathProvider: { " \n\t " }
+        )
+
+        let resolved = await context.conversationProjectPath()
+
+        #expect(resolved == nil)
+    }
+
+    @Test("provider 返回 nil 时会话项目路径为 nil")
+    @MainActor
+    func returnsNilWhenProviderReturnsNil() async throws {
+        let context = ToolExecutionContext(
+            jobID: "job-nil",
+            conversationID: UUID(),
+            conversationProjectPathProvider: { nil }
+        )
+
+        let resolved = await context.conversationProjectPath()
+
+        #expect(resolved == nil)
+    }
 }
